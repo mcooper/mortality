@@ -256,20 +256,25 @@ all <- all %>%
 
 write.csv(all, '~/Mortality_individualdata.csv', row.names=F)
 
-new <- foreach(i=1:nrow(all), .packages=c('tidyverse'), .combine=bind_rows) %dopar% {
+foreach(i=1:nrow(all), .packages=c('tidyverse')) %dopar% {
   
-  cat(round(i/nrow(all)*100, 1), '\n')
+  cat(round(i/nrow(all)*100, 4), '\n')
   
+  mothers_age <- ifelse(is.na(all$mothers_age[i]), NA, (all$mothers_age[i]*12):(all$mothers_age[i]*12 - all$age[i]))
+  months_in_loc <- ifelse(is.na(all$years_in_loc[i]), NA, (all$years_in_loc[i]*12):(all$years_in_loc[i]*12 - all$age[i]))
+
   df <- data.frame(ind_code=all$ind_code[i],
                  date=all$interview_cmc[i]:all$birthdate_cmc[i],
                  age=all$age[i]:0,
                  mother_years_ed=all$mother_years_ed[i]*12,
-                 mothers_age=(all$mothers_age[i]*12):(all$mothers_age[i]*12 - all$age[i]),
-                 months_in_loc=(all$years_in_loc[i]*12):(all$years_in_loc[i]*12 - all$age[i]),
+                 mothers_age=mothers_age,
+                 months_in_loc=months_in_loc,
                  months_before_survey=0:all$age[i]
                  )
   
-  df$mother_years_ed[df$mother_years_ed > (df$mothers_age - 60)] <- df$mothers_age[(df$mother_years_ed > (df$mothers_age - 60))] - 60
+  if (!is.na(all$mother_years_ed[i])){
+    df$mother_years_ed[df$mother_years_ed > (df$mothers_age - 60)] <- df$mothers_age[(df$mother_years_ed > (df$mothers_age - 60))] - 60
+  }
   
   if (!all$alive[i]){
     df$alive <- df$age <= all$age_at_death[i]
@@ -284,9 +289,11 @@ new <- foreach(i=1:nrow(all), .packages=c('tidyverse'), .combine=bind_rows) %dop
   df$mother_years_ed <- floor(df$mother_years_ed/12)
   df$mothers_age <- floor(df$mothers_age/12)
   
-  df
+  write.table(df, paste0('~/child-months/', i), row.names=F, col.names=F, sep=',')
+  
+  if (i == nrow(all)){
+    system('/home/mattcoop/telegram.sh "Done processing DHS"')
+  }
 }
 
-write.csv(new, '~/Mortality_childmonth.csv', row.names=F)
 
-system('/home/mattcoop/telegram.sh "Done processing DHS"')

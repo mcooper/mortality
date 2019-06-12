@@ -9,7 +9,7 @@ library(doParallel)
 
 setwd('climatedisk')
 
-dat <- read.csv('~/Mortality_geodata.csv') %>%
+dat <- read.csv('~/child-months/Mortality_geodata.csv') %>%
   filter(!(latitude==0 & longitude==0))
 
 sp <- SpatialPointsDataFrame(coords=dat[ c('longitude', 'latitude')], data = dat)
@@ -59,10 +59,10 @@ extract <- function(vrt, x, y){
   
 }
 
-cl <- makeCluster(32, outfile = '')
+cl <- makeCluster(20, outfile = '')
 registerDoParallel(cl)
 
-df <- foreach(n=1:nrow(rll), .packages=c('raster', 'gdalUtils', 'SPEI', 'dplyr', 'zoo')) %dopar% {
+foreach(n=1:nrow(rll), .packages=c('raster', 'gdalUtils', 'SPEI', 'dplyr', 'zoo')) %dopar% {
   
   precip <- extract(precip_vrt_file, rll$x[n], rll$y[n])
   
@@ -82,6 +82,7 @@ df <- foreach(n=1:nrow(rll), .packages=c('raster', 'gdalUtils', 'SPEI', 'dplyr',
   interview <- data.frame(date_cmc=seq(973,1404),
                           
                           #spei
+                          spei3=as.numeric(spei(s, 3, na.rm=TRUE)$fitted),
                           spei6=as.numeric(spei(s, 6, na.rm=TRUE)$fitted),
                           spei12=as.numeric(spei(s, 12, na.rm=TRUE)$fitted),
                           spei24=as.numeric(spei(s, 24, na.rm=TRUE)$fitted),
@@ -99,34 +100,6 @@ df <- foreach(n=1:nrow(rll), .packages=c('raster', 'gdalUtils', 'SPEI', 'dplyr',
                           temp6monthZ=(temp6 - mean(temp6, na.rm=T))/sd(temp6, na.rm=T),
                           temp12monthZ=(temp12 - mean(temp12, na.rm=T))/sd(temp12, na.rm=T),
                           temp24monthZ=(temp24 - mean(temp24, na.rm=T))/sd(temp24, na.rm=T))
-  
-  interview$spei6ymx=rollapply(interview$spei6, width=12, FUN=max, fill=NA, na.rm=T, align='right')
-  interview$spei12ymx=rollapply(interview$spei12, width=12, FUN=max, fill=NA, na.rm=T, align='right')
-  interview$spei24ymx=rollapply(interview$spei24, width=12, FUN=max, fill=NA, na.rm=T, align='right')
-  interview$spei36ymx=rollapply(interview$spei36, width=12, FUN=max, fill=NA, na.rm=T, align='right')
-  interview$spei48ymx=rollapply(interview$spei48, width=12, FUN=max, fill=NA, na.rm=T, align='right')
-  
-  interview$spi6ymx=rollapply(interview$spi6, width=12, FUN=max, fill=NA, na.rm=T, align='right')
-  interview$spi12ymx=rollapply(interview$spi12, width=12, FUN=max, fill=NA, na.rm=T, align='right')
-  interview$spi24ymx=rollapply(interview$spi24, width=12, FUN=max, fill=NA, na.rm=T, align='right')
-  interview$spi36ymx=rollapply(interview$spi36, width=12, FUN=max, fill=NA, na.rm=T, align='right')
-  interview$spi48ymx=rollapply(interview$spi48, width=12, FUN=max, fill=NA, na.rm=T, align='right')
-  
-  interview$spei6ymn=rollapply(interview$spei6, width=12, FUN=min, fill=NA, na.rm=T, align='right')
-  interview$spei12ymn=rollapply(interview$spei12, width=12, FUN=min, fill=NA, na.rm=T, align='right')
-  interview$spei24ymn=rollapply(interview$spei24, width=12, FUN=min, fill=NA, na.rm=T, align='right')
-  interview$spei36ymn=rollapply(interview$spei36, width=12, FUN=min, fill=NA, na.rm=T, align='right')
-  interview$spei48ymn=rollapply(interview$spei48, width=12, FUN=min, fill=NA, na.rm=T, align='right')
-  
-  interview$spi6ymn=rollapply(interview$spi6, width=12, FUN=min, fill=NA, na.rm=T, align='right')
-  interview$spi12ymn=rollapply(interview$spi12, width=12, FUN=min, fill=NA, na.rm=T, align='right')
-  interview$spi24ymn=rollapply(interview$spi24, width=12, FUN=min, fill=NA, na.rm=T, align='right')
-  interview$spi36ymn=rollapply(interview$spi36, width=12, FUN=min, fill=NA, na.rm=T, align='right')
-  interview$spi48ymn=rollapply(interview$spi48, width=12, FUN=min, fill=NA, na.rm=T, align='right')
-  
-  interview$temp6monthZymx=rollapply(interview$temp6monthZ, width=12, FUN=max, fill=NA, na.rm=T, align='right')
-  interview$temp12monthZymx=rollapply(interview$temp12monthZ, width=12, FUN=max, fill=NA, na.rm=T, align='right')
-  interview$temp24monthZymx=rollapply(interview$temp24monthZ, width=12, FUN=max, fill=NA, na.rm=T, align='right')
   
   meanannual <- data.frame(mean_annual_precip=mean(precip, na.rm=T)*12,
                            mean_minT=mean(tmin, na.rm=T),
@@ -151,6 +124,18 @@ precip <- list.files()%>%
   lapply(read.csv) %>%
   bind_rows
 
+#Reduce data size by eliminating uncessary precision:
+for (n in c("spei3", "spei6", "spei12", "spei24", "spei36", "spei48", "spi6", "spi12", "spi24", "spi36", "spi48", "temp6monthZ", "temp12monthZ", "temp24monthZ")){
+	precip[ , n] <- round(precip[ , n], 2)
+}
+
+precip$mean_annual_precip <- round(precip$mean_annual_precip, 0)
+
+for (n in c("mean_minT", "mean_maxT")){
+	precip[ , n] <- round(precip[ , n], 1)
+}
+
+#Write
 write.csv(precip, '~/child-months/Mortality_SPI_Temps.csv', row.names=F)
 
 system('/home/mattcoop/telegram.sh "SPI for Mortality Done!"')

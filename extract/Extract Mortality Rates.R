@@ -8,8 +8,7 @@ library(foreach)
 library(doParallel)
 
 files <- read.csv('~/UseFiles.csv', stringsAsFactors = F) %>%
-  filter(GE != '' & BR != '') %>%
-  arrange(desc(WI))
+  filter(GE != '' & BR != '')
 
 fs <- files$BR
 
@@ -251,7 +250,7 @@ all$resp_code_new <- NULL
 resp$resp_code <- resp$resp_code_new
 resp$resp_code_new <- NULL
 
-write.csv(resp, '~/Mortality_respondentdata.csv', row.names=F)
+write.csv(resp, '~/child-months/Mortality_respondentdata.csv', row.names=F)
 
 all$ind_code <- paste0(all$resp_code, '-', all$birth_order)
 
@@ -265,7 +264,7 @@ geo <- all %>% group_by(latitude, longitude, code) %>%
   summarize(earliest_date=min(birthdate_cmc, na.rm=T),
             latest_date=max(interview_cmc, na.rm=T))
 
-write.csv(geo, '~/Mortality_geodata.csv')
+write.csv(geo, '~/child-months/Mortality_geodata.csv')
 
 #remove fields that area already in respondent-level data
 all <- all %>%
@@ -273,7 +272,7 @@ all <- all %>%
          -toilet_type_int, -toilet_type_chr, -region_int, -region_chr, -sample_weight,
          -wealth_quintile, -wealth_factor, -wealth_factor_harmonized, -hhsize)
 
-write.csv(all, '~/Mortality_individualdata.csv', row.names=F)
+write.csv(all, '~/child-months/Mortality_individualdata.csv', row.names=F)
 
 foreach(i=1:nrow(all), .packages=c('tidyverse')) %dopar% {
   
@@ -328,9 +327,3 @@ setwd('~/child-months/Tmp/')
 
 system('find . -type f -exec cat {} \\; > ../allchild-months.csv')
 
-allchildmonths <- read.csv('../allchild-months.csv')
-
-names(allchildmonths) <- c("ind_code", "date", "age", "mother_years_ed", "mothers_age",
-                           "months_in_loc", "months_before_survey", "alive")
-
-write.csv(allchildmonths, 'allchild-months.csv', row.names=F)

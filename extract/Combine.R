@@ -1,50 +1,48 @@
 setwd('/home/mattcoop/child-months')
 
 library(tidyverse)
-library(ff)
-library(ffbase)
 
 child.months <- read.csv(file='allchild-months.csv')
-spei <- read.csv(file='Mortality_SPI_Temps.csv')
-ind <- read.csv(file='Mortality_individualdata.csv')
-#res <- read.csv('Mortality_respondentdata.csv')
+
+names(child.months) <- c("ind_code", "date", "age", "mother_years_ed", "mothers_age",
+                           "months_in_loc", "months_before_survey", "alive")
 
 #Filter to the child.months that we want
+#  Children under 5
+#  At least three months in location
+#  And within 15 years of the survey
 child.months <- child.months %>%
   filter((age <= 60) & (months_in_loc >= 3) & (months_before_survey < 180))
 
 write.csv(child.months, 'child.months-reduced.csv', row.names=F)
 
-#Get the individual vars that we want and join
-ind <- ind %>%
-  select(-age, -mother_years_ed, -mothers_age, -alive, -years_in_loc, -interview_cmc,
-         -birthdate_cmc)
+ind <- read.csv(file='Mortality_individualdata.csv') %>%
+  select(ind_code, resp_code, code, birth_order, male)
 
+spei <- read.csv(file='Mortality_SPI_Temps.csv') %>%
+  select(date=date_cmc, code, spei24, spei12, spei36) %>%
+  mutate(spei24 = round(spei24, 2),
+         spei36 = round(spei36, 2),
+         spei12 = round(spei12, 2))
 
-#Get the respondent vars that we want and join
-#Skip for now until we have the harmonized wealth data
+res <- read.csv('Mortality_respondentdata.csv') %>%
+  select(wealth_factor_harmonized, hhsize, resp_code)
 
-#Lets just get SPEI data
-spei <- spei %>%
-  select(date=date_cmc, code, spei24, spei24ymn, spei24ymx)
+comb <- Reduce(function(x,y){merge(x,y,all.x=T,all.y=F)}, list(child.months, ind, res, spei))
 
-child.months2 <- merge(child.months, ind, all.x=T, all.y=F)
+comb$surveycode <- substr(comb$code, 1, 6)
 
-child.months3 <- merge(child.months2, spei, all.x=T, all.y=F)
-
-child.months3 <- child.months3 %>% 
-   filter(!is.na(spei24) & !is.na(spei24ymn) & !is.na(spei24ymx))
-
-
-write.csv(child.months3, 'Mortality-combined.csv', row.names=F)
+write.csv(comb, 'Mortality-combined.csv', row.names=F)
 
 ##Do a quick initial analysis
 
-child.months3$spei <- cut(child.months3$spei24, c(-2, -1, -0.5, 0.5, 1, 2))
+comb$spei <- cut(comb$spei24, c(-10, -1, -0.5, 0.5, 1, 10))
 
-child.months3$mortality <- !child.months3$alive
+comb$spei <- relevel(comb$spei,  "(-0.5,0.5]")
 
-mod <- glm(mortality ~ age + mother_years_ed + birth_order + spei, family='binomial', data=child.months3)
+comb$mortality <- !comb$alive
+
+mod <- glm(mortality ~ age + mother_years_ed + birth_order + spei + hhsize + wealth_factor_harmonized, family='binomial', data=comb)
 summary(mod)
 
 

@@ -1,13 +1,14 @@
 library(tidyverse)
 library(ggthemes)
+library(mgcv)
 
 #Read in models
-load('~/modresults/mod3.Rdata')
-load('~/modresults/mod6.Rdata')
-load('~/modresults/mod12.Rdata')
-load('~/modresults/mod24.Rdata')
-load('~/modresults/mod36.Rdata')
-load('~/modresults/mod48.Rdata')
+load('~/mod-results/mod3.Rdata')
+load('~/mod-results/mod6.Rdata')
+load('~/mod-results/mod12.Rdata')
+load('~/mod-results/mod24.Rdata')
+load('~/mod-results/mod36.Rdata')
+load('~/mod-results/mod48.Rdata')
 
 ##Make Prediction Plots
 preddf <- data.frame(age=12, mother_years_ed=5, mothers_age=18, birth_order=3, male=FALSE, 
@@ -23,10 +24,11 @@ preddf[ , c('spei48pred', 'spei48se')] <- predict(object=mod48, preddf, se=TRUE)
 
 plotdf <- preddf %>%
   mutate(spei=spei24) %>%
-  select(-spei3, -spei6, -spei12, -spei24, -spei36, -spei48) %>%
+  select(-spei3, -spei6, -spei12, -spei24, -spei36, -spei48,
+         -age, -mother_years_ed, -mothers_age, -birth_order, -male) %>% 
   gather(window, value, -spei) %>%
   mutate(parameter=ifelse(grepl('se', window), 'se', 'pred'),
-         window=substr(window, 1, 6)) %>%
+         window=gsub('se|pred', '', window)) %>% 
   spread(parameter, value) %>%
   mutate(maxpred=exp(pred + se*2),
          maxpred=maxpred/(1+maxpred),
@@ -34,6 +36,8 @@ plotdf <- preddf %>%
          minpred=minpred/(1+minpred),
          pred=exp(pred),
          pred=pred/(1+pred))
+
+write.csv(plotdf, 'Mortality-smooths-plotdf.csv', row.names=F)
 
 ggplot(plotdf) + 
   geom_ribbon(aes(x=spei, ymin=minpred, ymax=maxpred, fill=window), alpha=0.1) + 
@@ -53,6 +57,6 @@ ggplot(plotdf) +
         plot.subtitle = element_text(hjust = 0.5)) + 
   theme(legend.position = c(0.9, 0.9))
 
-ggsave('~/Mortality_Smooths.png', width=9, height=7)
+ggsave('~/Mortality_Smooths_6.png', width=9, height=7)
 
 

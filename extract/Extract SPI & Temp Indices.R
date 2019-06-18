@@ -7,7 +7,7 @@ library(zoo)
 library(foreach)
 library(doParallel)
 
-setwd('climatedisk')
+setwd('~/climatedisk')
 
 dat <- read.csv('~/child-months/Mortality_geodata.csv') %>%
   filter(!(latitude==0 & longitude==0))
@@ -75,9 +75,13 @@ foreach(n=1:nrow(rll), .packages=c('raster', 'gdalUtils', 'SPEI', 'dplyr', 'zoo'
   
   s <- precip - PET
   
+  temp3 <- rollmean(tmax, k=3, fill=NA, na.rm=T, align='right')
   temp6 <- rollmean(tmax, k=6, fill=NA, na.rm=T, align='right')
   temp12 <- rollmean(tmax, k=12, fill=NA, na.rm=T, align='right')
   temp24 <- rollmean(tmax, k=24, fill=NA, na.rm=T, align='right')
+  
+  last_year_precip <- rollmean(precip, k=12, fill=NA, na.rm=T, align='right')*12
+  last_3month_precip <- rollmean(precip, k=3, fill=NA, na.rm=T, align='right')
   
   interview <- data.frame(date_cmc=seq(973,1404),
                           
@@ -99,7 +103,12 @@ foreach(n=1:nrow(rll), .packages=c('raster', 'gdalUtils', 'SPEI', 'dplyr', 'zoo'
                           #TempZ
                           temp6monthZ=(temp6 - mean(temp6, na.rm=T))/sd(temp6, na.rm=T),
                           temp12monthZ=(temp12 - mean(temp12, na.rm=T))/sd(temp12, na.rm=T),
-                          temp24monthZ=(temp24 - mean(temp24, na.rm=T))/sd(temp24, na.rm=T))
+                          temp24monthZ=(temp24 - mean(temp24, na.rm=T))/sd(temp24, na.rm=T),
+						  
+						  temp3,
+						  last_year_precip,
+						  last_3month_precip
+						  )
   
   meanannual <- data.frame(mean_annual_precip=mean(precip, na.rm=T)*12,
                            mean_minT=mean(tmin, na.rm=T),
@@ -130,8 +139,10 @@ for (n in c("spei3", "spei6", "spei12", "spei24", "spei36", "spei48", "spi6", "s
 }
 
 precip$mean_annual_precip <- round(precip$mean_annual_precip, 0)
+precip$last_year_precip <- round(precip$last_year_precip, 0)
+precip$last_3month_precip <- round(precip$last_3month_precip, 0)
 
-for (n in c("mean_minT", "mean_maxT")){
+for (n in c("mean_minT", "mean_maxT", "temp3")){
 	precip[ , n] <- round(precip[ , n], 1)
 }
 

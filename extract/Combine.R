@@ -1,6 +1,7 @@
 setwd('/home/mattcoop/child-months')
 
 library(tidyverse)
+library(readr)
 # 
 # child.months <- read.csv(file='allchild-months.csv')
 # 
@@ -15,17 +16,17 @@ library(tidyverse)
 #   filter((age <= 60) & (months_in_loc >= 3) & (months_before_survey < 180))
 # 
 # write.csv(child.months, 'child.months-reduced.csv', row.names=F)
-child.months <- read.csv('child.months-reduced.csv') %>%
+child.months <- read_csv('child.months-reduced.csv') %>%
   mutate(cc = substr(ind_code, 1, 2),
          year = floor(date/12) + 1900)
 
-ind <- read.csv(file='Mortality_individualdata.csv') %>%
+ind <- read_csv(file='Mortality_individualdata.csv') %>%
   select(ind_code, resp_code, code, birth_order, male)
 
-spei <- read.csv(file='Mortality_SPI_Temps.csv') %>%
-  select(date=date_cmc, code, spei3, spei36, temp3, last_year_precip, last_3month_precip)
+spei <- read_csv(file='Mortality_SPI_Temps_Ewembi.csv') %>%
+  select(date=date_cmc, code, spei3, spei36)
 
-gdp <- read.csv('Mortality_GDP.csv')
+gdp <- read_csv('Mortality_GDP.csv')
 
 # #Skip wealth Data For Now, since it is not temporal
 # 

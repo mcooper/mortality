@@ -1,6 +1,6 @@
 if [ ! -d "/mnt/blobfusetemp" ] 
 then
-    sudo mkdir /mnt/blobgfusetemp
+    sudo mkdir /mnt/blobfusetemp
     sudo chown mattcoop /mnt/blobfusetemp
 fi
 

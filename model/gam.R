@@ -18,7 +18,7 @@ mod3 <- bam(mortality ~ age + mother_years_ed + mothers_age + birth_order + male
 
 save(mod3, file='~/mortalityblob/mod-results/mod3_elewi.Rdata')
 
-system('/home/climatedisk/telegram.sh "3 Smooths Done!"')
+system('/home/mattcoop/telegram.sh "3 Smooths Done!"')
 
 rm(mod3)
 
@@ -27,7 +27,7 @@ mod36 <- bam(mortality ~ age + mother_years_ed + mothers_age + birth_order + mal
 
 save(mod36, file='~/mortalityblob/mod-results/mod36_elewi.Rdata')
 
-system('/home/matt/telegram.sh "36 Smooths Done!"')
+system('/home/mattcoop/telegram.sh "36 Smooths Done!"')
 
 
 

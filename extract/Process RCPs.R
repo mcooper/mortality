@@ -4,6 +4,8 @@ library(ncdf4)
 library(lubridate)
 library(tidyverse)
 library(abind)
+library(foreach)
+library(doParallel)
 
 options(stringsAsFactors=FALSE)
 
@@ -33,9 +35,13 @@ read_isimip <- function(file){
   dat
 }
 
-e <- expand.grid(list(rcp=c('rcp26', 'rcp45', 'rcp60', 'rcp85'), model=c('GFDL-ESM2M', 'HadGEM2-ES', 'IPSL-CM5A-LR', 'MIROC5')))
+e <- expand.grid(list(rcp=c('rcp26', 'rcp45', 'rcp60', 'rcp85'), model=c('GFDL-ESM2M', 'HadGEM2-ES', 'IPSL-CM5A-LR', 'MIROC5')),
+                 stringsAsFactors = F)
 
-for (i in 1:nrow(e)){
+cl <- makeCluster(6, outfile = '')
+registerDoParallel(cl)
+
+foreach(i=c(3, 5:nrow(e)), .packages=c('ncdf4', 'lubridate', 'tidyverse', 'abind')) %dopar% {
   
   rcp <- e$rcp[i]
   model <- e$model[i]
@@ -57,14 +63,22 @@ for (i in 1:nrow(e)){
       rm(ref)
     }
     
-    group <- as.factor(floor_date(ymd(dimnames(dat)[[3]]), unit = 'months'))
+    group <- as.character(floor_date(ymd(dimnames(dat)[[3]]), unit = 'months'))
     
-    res <- aperm(apply(dat, c(1,2), by, group, sum), c(2,3,1))
+    comb <- list()
+    for (g in unique(group)){
+      sel <- apply(dat[ , , group==g], MARGIN=c(1, 2), FUN=sum)
+      comb[[length(comb) + 1]] <- sel
+    }
+    
+    res <- abind(comb, along=3)
+    
+    dimnames(res)[[3]] <- unique(group)
     
     pr[[length(pr) + 1]] <- res
   }
   
-  pr <- Reduce(abind, x = pr)
+  pr <- abind(pr, along = 3)
   save(pr, file=paste0('../scenarios_monthly/', rcp, '_', model, '_pr.RData'))
   system(paste0('~/telegram.sh "Done with ', rcp, '_', model, '_pr"'))
   rm(pr)
@@ -86,31 +100,24 @@ for (i in 1:nrow(e)){
       rm(ref)
     }
     
-    group <- as.factor(floor_date(ymd(dimnames(dat)[[3]]), unit = 'months'))
+    group <- as.character(floor_date(ymd(dimnames(dat)[[3]]), unit = 'months'))
     
-    res <- aperm(apply(dat,c(1,2), by, group, mean), c(2,3,1))
+    comb <- list()
+    for (g in unique(group)){
+      sel <- apply(dat[ , , group==g], MARGIN=c(1, 2), FUN=mean)
+      comb[[length(comb) + 1]] <- sel
+    }
+    
+    res <- abind(comb, along=3)
+    
+    dimnames(res)[[3]] <- unique(group)
     
     tas[[length(tas) + 1]] <- res
   }
   
-  tas <- Reduce(abind, x = tas)
+  tas <- abind(tas, along=3)
   save(tas, file=paste0('../scenarios_monthly/', rcp, '_', model, '_tas.RData'))
   system(paste0('~/telegram.sh "Done with ', rcp, '_', model, '_tas"'))
   rm(tas)
   
 }
-# 
-# #An alternative way to aggregate, from data.table
-# #Takes a lot more memory
-# start <- Sys.time()
-# dimnames(dat)[[3]] <- floor_date(ymd(dimnames(dat)[[3]]), unit = 'months')
-# dimnames(dat)[[1]] <- 1:720
-# dimnames(dat)[[2]] <- 1:360
-# 
-# dt <- as.data.table(dat)
-# dt <- dt[ , sum(value), by=list(V1, V2, V3)]
-# 
-# res = array(dim = c(720, 360, length(unique(dimnames(dat)[[3]]))))
-# invisible(dt[, res[V1, V2, V3] <<- value, .(V1,V2,V3)])
-# end <- Sys.time()
-# 

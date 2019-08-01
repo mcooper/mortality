@@ -1,7 +1,8 @@
-setwd('/home/mattcoop/child-months')
+setwd('/home/mattcoop/mortalityblob')
 
 library(tidyverse)
 library(readr)
+library(data.table)
 # 
 # child.months <- read.csv(file='allchild-months.csv')
 # 
@@ -26,7 +27,8 @@ ind <- read_csv(file='Mortality_individualdata.csv') %>%
 spei <- read_csv(file='Mortality_SPI_Temps_Ewembi.csv') %>%
   select(date=date_cmc, code, spei3, spei36)
 
-gdp <- read_csv('Mortality_GDP.csv')
+gdp <- read_csv('Mortality_GDP_SSP_Harmonized.csv') %>%
+  select(date=date_cmc, cc, GDP)
 
 # #Skip wealth Data For Now, since it is not temporal
 # 
@@ -34,13 +36,15 @@ gdp <- read_csv('Mortality_GDP.csv')
 #   select(wealth_factor_harmonized, hhsize, resp_code)
 # comb <- Reduce(function(x,y){merge(x,y,all.x=T,all.y=F)}, list(child.months, ind, res, spei))
 
-dim(child.months)
+#Convert to data.table for easy merging
+child.months <- data.table(child.months, key='ind_code')
+ind <- data.table(ind, key='ind_code')
+spei <- data.table(spei, key=c('date', 'code'))
+gdp <- data.table(gdp, key=c('cc', 'date'))
+
 child.months <- merge(child.months, ind, all.x=T, all.y=F)
-dim(child.months)
-child.months <- merge(child.months, spei, all.x=T, all.y=F)
-dim(child.months)
-child.months <- merge(child.months, gdp, all.x=T, all.y=F)
-dim(child.months)
+child.months <- merge(child.months, spei, all.x=T, all.y=F, by=c('code', 'date'))
+child.months <- merge(child.months, gdp, all.x=T, all.y=F, by=c('cc', 'date'))
 
 write.csv(child.months, 'Mortality-combined.csv', row.names=F)
 

@@ -16,10 +16,10 @@ lat <- matrix(rep(seq(89.75, -89.75, length.out=360), 720), nrow = 360, ncol=720
 e <- expand.grid(list(rcp=c('rcp26', 'rcp45', 'rcp60', 'rcp85'), model=c('GFDL-ESM2M', 'HadGEM2-ES', 'IPSL-CM5A-LR', 'MIROC5')),
                  stringsAsFactors = F)
 
-cl <- makeCluster(8, outfile = '')
+cl <- makeCluster(4, outfile = '')
 registerDoParallel(cl)
 
-foreach(i=1:nrow(e), .packages=c('SPEI', 'lubridate', 'tidyverse', 'abind')) %dopar% {
+foreach(i=10:nrow(e), .packages=c('SPEI', 'lubridate', 'tidyverse', 'abind')) %dopar% {
   
   load(paste0(e$rcp[i], '_', e$model[i], '_pr.RData'))
   load(paste0(e$rcp[i], '_', e$model[i], '_tas.RData'))
@@ -60,7 +60,6 @@ foreach(i=1:nrow(e), .packages=c('SPEI', 'lubridate', 'tidyverse', 'abind')) %do
   dimnames(spei36)[[3]] <- dimnames(comb)[[3]]
   
   for (r in 1:360){
-    print(r)
     for (c in 1:720){
       if (is.na(comb[r, c, 1])){
         next
@@ -75,8 +74,8 @@ foreach(i=1:nrow(e), .packages=c('SPEI', 'lubridate', 'tidyverse', 'abind')) %do
   spei3 <- spei3[ , , as.character(seq(ymd('2020-01-01'), ymd('2099-12-01'), by='months'))]
   spei36 <- spei36[ , , as.character(seq(ymd('2020-01-01'), ymd('2099-12-01'), by='months'))]
   
-  save(spei3,  file=paste0('/home/mattcoop/climatedisk2/climatedisk/', e$rcp[i], "_", e$model[i], 'spei3.Rdata'))
-  save(spei36, file=paste0('/home/mattcoop/climatedisk2/climatedisk/', e$rcp[i], "_", e$model[i], 'spei36.Rdata'))
+  save(spei3,  file=paste0('/home/mattcoop/climatedisk2/climatedisk/spei/', e$rcp[i], "_", e$model[i], 'spei3.Rdata'))
+  save(spei36, file=paste0('/home/mattcoop/climatedisk2/climatedisk/spei/', e$rcp[i], "_", e$model[i], 'spei36.Rdata'))
   
   cat("Done with SPEI on", e$rcp[i], " for model ", e$model[i], '\n')
   

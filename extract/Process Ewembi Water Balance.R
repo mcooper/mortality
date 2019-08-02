@@ -2,6 +2,8 @@ setwd('/home/mattcoop/climatedisk2/climatedisk/ewembi')
 
 library(raster)
 library(abind)
+library(lubridate)
+library(SPEI)
 
 #Get reference to mask NAs
 load('../scenarios_monthly/rcp26_GFDL-ESM2M_pr.RData')
@@ -57,3 +59,27 @@ ewembi_wb <- pr_a - pet
 dimnames(ewembi_wb)[[3]] <- dates
 
 save(ewembi_wb, file = '../ewembi_waterbalance.Rdata')
+
+spei3 <- array(dim=c(360, 720, length(dates)))
+dimnames(spei3)[[3]] <- dates
+
+spei36 <- array(dim=c(360, 720, length(dates)))
+dimnames(spei36)[[3]] <- dates
+
+for (r in 1:360){
+  print(r)
+  for (c in 1:720){
+    if (is.na(ewembi_wb[r, c, 1])){
+	  next
+    }
+  
+    spei3[r, c, ] <- as.vector(spei(ewembi_wb[r, c, ], scale=3)$fitted)
+    spei36[r, c, ] <- as.vector(spei(ewembi_wb[r, c, ], scale=36)$fitted)
+	
+  }
+}
+
+save(spei3, file = '../spei/ewembi_spei3.Rdata')
+save(spei36, file = '../spei/ewembi_spei36.Rdata')
+
+

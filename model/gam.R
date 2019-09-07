@@ -52,3 +52,19 @@ save(mod, file='~/mortalityblob/mod-results/mod_gam_spei36only_gdp_REML.Rdata')
 
 
 
+# Clip to well-sampled SPEI levels
+
+data <- data %>%
+  filter(spei36 > -1.75 & spei36 < 1.75 & spei3 > -1.75 & spei3 < 1.75)
+ 
+mod <- bam(mortality ~ age + mother_years_ed + mothers_age + birth_order + male + s(spei3, by=GDP, bs='cr') + s(spei36, by=GDP, bs='cr'), 
+             family='binomial', data=data, cluster=cl)
+
+save(mod, file='~/mortalityblob/mod-results/mod_gam_spei_gdp_speifilter.Rdata')
+
+
+mod <- bam(mortality ~ s(spei3, by=GDP, bs='cr') + s(spei36, by=GDP, bs='cr'), 
+             family='binomial', data=data, cluster=cl)
+
+save(mod, file='~/mortalityblob/mod-results/mod_gam_spei_gdp_speifilter_nocovars.Rdata')
+ 

@@ -3,12 +3,12 @@ library(ggthemes)
 library(mgcv)
 
 #Read in models
-load('~/mod-results/mod3.Rdata')
-load('~/mod-results/mod6.Rdata')
-load('~/mod-results/mod12.Rdata')
-load('~/mod-results/mod24.Rdata')
-load('~/mod-results/mod36.Rdata')
-load('~/mod-results/mod48.Rdata')
+load('/home/mattcoop/mortalityblob/mod-results/mod3.Rdata')
+load('/home/mattcoop/mortalityblob/mod-results/mod6.Rdata')
+load('/home/mattcoop/mortalityblob/mod-results/mod12.Rdata')
+load('/home/mattcoop/mortalityblob/mod-results/mod24.Rdata')
+load('/home/mattcoop/mortalityblob/mod-results/mod36.Rdata')
+load('/home/mattcoop/mortalityblob/mod-results/mod48.Rdata')
 
 ##Make Prediction Plots
 preddf <- data.frame(age=12, mother_years_ed=5, mothers_age=18, birth_order=3, male=FALSE, 

@@ -38,7 +38,10 @@ ggplot(comb %>% filter(Date > ymd('1990-01-01'))) +
 #Get CMC
 comb$date <- 12*(year(comb$Date) - 1900) + month(comb$Date)
 
-comb <- comb %>% select(date, FPI=Real) %>%
+sel <- comb %>% select(date, FPI=real_approx) %>%
   na.omit
 
-write.csv(comb, 'G://My Drive/DHS Processed/FoodPriceIndex.csv', row.names=F)
+ggplot(sel) + 
+  geom_line(aes(x=date, y=FPI))
+
+write.csv(sel, 'G://My Drive/DHS Processed/FoodPriceIndex.csv', row.names=F)

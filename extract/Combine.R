@@ -1,4 +1,4 @@
-setwd('/home/mattcoop/mortalityblob')
+setwd('/home/mattcoop/mortalityblob/dhs')
 
 library(tidyverse)
 library(readr)
@@ -24,8 +24,8 @@ child.months <- read_csv('child.months-reduced.csv') %>%
 ind <- read_csv(file='Mortality_individualdata.csv') %>%
   select(ind_code, resp_code, code, birth_order, male)
 
-spei <- read_csv(file='Mortality_SPI_Temps_Ewembi.csv') %>%
-  select(date=date_cmc, code, spei3, spei36)
+spei <- read_csv(file='Mortality_SPI_Temps.csv') %>%
+  select(date=date_cmc, code, spei3, spei6, spei12, spei24, spei36)
 
 gdp <- read_csv('Mortality_GDP_SSP_Harmonized.csv') %>%
   select(date=date_cmc, cc, GDP)
@@ -47,6 +47,17 @@ child.months <- merge(child.months, spei, all.x=T, all.y=F, by=c('code', 'date')
 child.months <- merge(child.months, gdp, all.x=T, all.y=F, by=c('cc', 'date'))
 
 write.csv(child.months, 'Mortality-combined.csv', row.names=F)
+
+#Do Subsample a la Wood 
+n <- nrow(child.months)
+
+S <- 0.02 #Get 2% of all zeros
+
+sel <- child.months[!child.months$alive | runif(n) < S, ] #Sampling
+
+sel$offset <- rep(log(nrow(sel)/n), nrow(sel))
+
+write.csv(sel, 'Mortality-combined-subsample.csv', row.names=F)
 
 system('/home/mattcoop/telegram.sh "Combine Done"')
 

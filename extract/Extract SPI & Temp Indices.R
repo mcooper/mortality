@@ -7,9 +7,15 @@ library(zoo)
 library(foreach)
 library(doParallel)
 
-setwd('~/climatedisk/ewembi')
+#mkdir /mnt/ewembit
+#mkdir /mnt/SPIres
 
-dat <- read.csv('~/child-months/Mortality_geodata.csv') %>%
+#Need to copy all files from ~/mortalityblob/ewembi to /mnt/ewembi
+#rsync -avhW --no-compress --progress ~/mortalityblob/ewembi/*.tif /mnt
+
+setwd('/mnt/ewembi')
+
+dat <- read.csv('~/mortalityblob/dhs/Mortality_geodata.csv') %>%
   filter(!(latitude==0 & longitude==0))
 
 sp <- SpatialPointsDataFrame(coords=dat[ c('longitude', 'latitude')], data = dat)
@@ -22,7 +28,7 @@ sp@data$tmpcode <- extract(codes, sp)
 
 rll <- sp@data %>% group_by(tmpcode) %>%
   summarize(x=mean(longitude),
-            y=mean(latitude))
+            y=mean(latitude)) 	
 
 #Read in precip data
 precip_vrt_file <- extension(rasterTmpFile(), 'ivrt')
@@ -48,7 +54,14 @@ extract <- function(vrt, x, y){
   
 }
 
-cl <- makeCluster(16, outfile = '')
+getTempZ <- function(temp){
+	month_means <- apply(matrix(temp, ncol=12, byrow=T), MARGIN=2, FUN=mean, na.rm=T)
+	month_sd <- apply(matrix(temp, ncol=12, byrow=T), MARGIN=2, FUN=sd, na.rm=T)
+
+	(temp - month_means)/month_sd
+}
+
+cl <- makeCluster(32, outfile = '')
 registerDoParallel(cl)
 
 foreach(n=1:nrow(rll), .packages=c('raster', 'gdalUtils', 'SPEI', 'dplyr', 'zoo')) %dopar% {
@@ -64,10 +77,14 @@ foreach(n=1:nrow(rll), .packages=c('raster', 'gdalUtils', 'SPEI', 'dplyr', 'zoo'
   
   s <- precip - PET
   
+  temp1 <- tmax
+  temp2 <- rollmean(tmax, k=2, fill=NA, na.rm=T, align='right')
   temp3 <- rollmean(tmax, k=3, fill=NA, na.rm=T, align='right')
   temp6 <- rollmean(tmax, k=6, fill=NA, na.rm=T, align='right')
   temp12 <- rollmean(tmax, k=12, fill=NA, na.rm=T, align='right')
   temp24 <- rollmean(tmax, k=24, fill=NA, na.rm=T, align='right')
+  temp36 <- rollmean(tmax, k=36, fill=NA, na.rm=T, align='right')
+  temp48 <- rollmean(tmax, k=48, fill=NA, na.rm=T, align='right')
   
   last_year_precip <- rollsum(precip, k=12, fill=NA, na.rm=T, align='right')
   last_3month_precip <- rollsum(precip, k=3, fill=NA, na.rm=T, align='right')
@@ -76,6 +93,7 @@ foreach(n=1:nrow(rll), .packages=c('raster', 'gdalUtils', 'SPEI', 'dplyr', 'zoo'
                           
                           #spei
                           spei1=as.numeric(spei(s, 1, na.rm=TRUE)$fitted),
+                          spei2=as.numeric(spei(s, 2, na.rm=TRUE)$fitted),
                           spei3=as.numeric(spei(s, 3, na.rm=TRUE)$fitted),
                           spei6=as.numeric(spei(s, 6, na.rm=TRUE)$fitted),
                           spei12=as.numeric(spei(s, 12, na.rm=TRUE)$fitted),
@@ -84,12 +102,24 @@ foreach(n=1:nrow(rll), .packages=c('raster', 'gdalUtils', 'SPEI', 'dplyr', 'zoo'
                           spei48=as.numeric(spei(s, 48, na.rm=TRUE)$fitted),
                           
                           #TempZ
-                          temp3monthZ=(temp3 - mean(temp3, na.rm=T))/sd(temp3, na.rm=T),
-                          temp6monthZ=(temp6 - mean(temp6, na.rm=T))/sd(temp6, na.rm=T),
-                          temp12monthZ=(temp12 - mean(temp12, na.rm=T))/sd(temp12, na.rm=T),
-                          temp24monthZ=(temp24 - mean(temp24, na.rm=T))/sd(temp24, na.rm=T),
+						  #Get Z score for that month!
+						  temp1monthZ = getTempZ(temp1),
+						  temp2monthZ = getTempZ(temp2),
+						  temp3monthZ = getTempZ(temp3),
+						  temp6monthZ = getTempZ(temp6),
+						  temp12monthZ = getTempZ(temp12),
+						  temp24monthZ = getTempZ(temp24),
+						  temp36monthZ = getTempZ(temp36),
+						  temp48monthZ = getTempZ(temp48),
 						  
 						  temp3,
+						  temp1,
+						  temp2,
+						  temp6,
+						  temp12,
+						  temp24,
+						  temp36,
+						  temp48,
 						  last_year_precip,
 						  last_3month_precip
 						  )
@@ -108,8 +138,9 @@ foreach(n=1:nrow(rll), .packages=c('raster', 'gdalUtils', 'SPEI', 'dplyr', 'zoo'
   }
   
   #Reduce data size by eliminating uncessary precision:
-  for (col in c("spei3", "spei6", "spei12", "spei24", "spei36", "spei48", 
-              "temp3monthZ", "temp6monthZ", "temp12monthZ", "temp24monthZ")){
+  for (col in c("spei1", "spei2", "spei3", "spei6", "spei12", "spei24", "spei36", "spei48", 
+              "temp3monthZ", "temp6monthZ", "temp12monthZ", "temp24monthZ", "temp36monthZ", "temp48monthZ",
+			  "temp1monthZ", "temp2monthZ", "temp3", "temp1", "temp2", "temp6", "temp12", "temp24", "temp36", "temp48")){
     all[ , col] <- round(all[ , col], 2)
   }
   
@@ -122,10 +153,10 @@ foreach(n=1:nrow(rll), .packages=c('raster', 'gdalUtils', 'SPEI', 'dplyr', 'zoo'
   }
   
   cat(n, round(n/nrow(rll)*100, 4), 'percent done\n') 
-  write.csv(all, paste0('~/child-months/SPIres/', n), row.names=F)
+  write.csv(all, paste0('/mnt/SPIres/', n), row.names=F)
 }
 
-setwd('~/child-months/SPIres')
+setwd('/mnt/SPIres/')
 
 precip <- list.files()%>%
   lapply(read.csv) %>%
@@ -133,7 +164,7 @@ precip <- list.files()%>%
 
 
 #Write
-write.csv(precip, '~/child-months/Mortality_SPI_Temps_Ewembi.csv', row.names=F)
+write.csv(precip, '~/mortalityblob/dhs/Mortality_SPI_Temps_Ewembi.csv', row.names=F)
 
 system('/home/mattcoop/telegram.sh "SPI for Mortality Done!"')
 

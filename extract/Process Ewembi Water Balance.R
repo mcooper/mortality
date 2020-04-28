@@ -1,4 +1,4 @@
-setwd('/home/mattcoop/climatedisk2/climatedisk/ewembi')
+setwd('/home/mattcoop/mortalityblob/ewembi')
 
 library(raster)
 library(abind)
@@ -63,6 +63,12 @@ save(ewembi_wb, file = '../ewembi_waterbalance.Rdata')
 spei3 <- array(dim=c(360, 720, length(dates)))
 dimnames(spei3)[[3]] <- dates
 
+spei12 <- array(dim=c(360, 720, length(dates)))
+dimnames(spei12)[[3]] <- dates
+
+spei24 <- array(dim=c(360, 720, length(dates)))
+dimnames(spei24)[[3]] <- dates
+
 spei36 <- array(dim=c(360, 720, length(dates)))
 dimnames(spei36)[[3]] <- dates
 
@@ -74,12 +80,16 @@ for (r in 1:360){
     }
   
     spei3[r, c, ] <- as.vector(spei(ewembi_wb[r, c, ], scale=3)$fitted)
+    spei12[r, c, ] <- as.vector(spei(ewembi_wb[r, c, ], scale=12)$fitted)
+    spei24[r, c, ] <- as.vector(spei(ewembi_wb[r, c, ], scale=24)$fitted)
     spei36[r, c, ] <- as.vector(spei(ewembi_wb[r, c, ], scale=36)$fitted)
 	
   }
 }
 
 save(spei3, file = '../spei/ewembi_spei3.Rdata')
+save(spei12, file = '../spei/ewembi_spei36.Rdata')
+save(spei24, file = '../spei/ewembi_spei36.Rdata')
 save(spei36, file = '../spei/ewembi_spei36.Rdata')
 
 

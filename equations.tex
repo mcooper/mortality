@@ -1,0 +1,46 @@
+\documentclass[usenames,dvipsnames]{beamer}
+
+\usepackage{xcolor}
+
+\begin{document}
+
+\begin{frame}
+
+\begin{equation*}
+	\log(\frac{p}{1-p}) = \beta_0 + \beta X + \textcolor{red}{s(SPEI)} + \epsilon
+\end{equation*}
+
+
+
+\begin{align*}
+	\text{where:}\\
+	\textit{p} &= \text{Probability of Mortality}\\
+	\beta_0 &= \text{Intercept}\\
+	\epsilon &= \text{Error}\\
+	\beta &= \text{Vector of Coefficients}\\
+	\textit{X} &= \text{Individual and Household Covariates}\\
+	\textcolor{red}{\textit{s(SPEI)} &= \text{Non-Linear Spline Function}}
+\end{align*}
+
+\end{frame}
+
+\begin{frame}
+
+\begin{equation*}
+	\log(\frac{p}{1-p}) = \beta_0 + \beta X + \textcolor{blue}{GDP}*\textcolor{red}{s(SPEI)} + \epsilon
+\end{equation*}
+
+\begin{align*}
+	\text{where:}\\
+	\textit{p} &= \text{Probability of Mortality} \\
+	\beta_0 &= \textrm{Intercept} \\
+	\epsilon &= \textrm{Error} \\
+	\beta &= \textrm{Vector of Coefficients} \\
+	\textit{X} &= \text{Individual and Household Covariates} \\
+	\textcolor{red}{\textit{s(SPEI)} &= \text{Non-Linear Spline Function}} \\
+	\textcolor{blue}{\textit{GDP}} & = \text{Re-scaled GDP}
+\end{align*}
+
+\end{frame}
+
+\end{document}

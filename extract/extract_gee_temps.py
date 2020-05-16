@@ -47,7 +47,3 @@ for d in pd.date_range('1973-04-01', '2019-12-31'):
 
 alldat.to_csv('~/mortalityblob/dhs/Temps_res_GEE.csv', index=False)
 
-import os
-os.system('~/telegram.sh "Done with Temperature Extracts!"')
-
-

@@ -79,10 +79,10 @@ geo$tmax <- (geo$dy2/2.5)*geo$r1 + (geo$dy1/2.5)*geo$r2
 
 #Calcuate percentiles of interpolated tmax values, comare
 geo <- geo %>%
-				group_by(x, y, code) %>%
+				group_by(code) %>%
 				mutate(tmaxP = percent_rank(tmax))
 
-geo$month <- monthToCMC(geo$date)
+geo$date <- monthToCMC(geo$date)
 
 #Summarize
 month <- data.table(geo)[ , list(count30 = sum(tmax > 30, na.rm=T),
@@ -92,7 +92,7 @@ month <- data.table(geo)[ , list(count30 = sum(tmax > 30, na.rm=T),
 										 count95 = sum(tmaxP > 0.95, na.rm=T),
 										 count99 = sum(tmaxP > 0.99, na.rm=T),
 										 count999 = sum(tmaxP > 0.999, na.rm=T)),
-							  list(x, y, month)]
+							  list(code, date)]
 
 write.csv(month, '/home/mattcoop/mortalityblob/dhs/Temps_month.csv', row.names=F)
 

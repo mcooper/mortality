@@ -58,7 +58,7 @@ ewembi_wb <- pr_a - pet
 
 dimnames(ewembi_wb)[[3]] <- dates
 
-save(ewembi_wb, file = '../ewembi_waterbalance.Rdata')
+save(ewembi_wb, file = 'ewembi_waterbalance.Rdata')
 
 spei3 <- array(dim=c(360, 720, length(dates)))
 dimnames(spei3)[[3]] <- dates
@@ -79,17 +79,17 @@ for (r in 1:360){
 	  next
     }
   
-    spei3[r, c, ] <- as.vector(spei(ewembi_wb[r, c, ], scale=3)$fitted)
-    spei12[r, c, ] <- as.vector(spei(ewembi_wb[r, c, ], scale=12)$fitted)
-    spei24[r, c, ] <- as.vector(spei(ewembi_wb[r, c, ], scale=24)$fitted)
+    #spei3[r, c, ] <- as.vector(spei(ewembi_wb[r, c, ], scale=3)$fitted)
+    #spei12[r, c, ] <- as.vector(spei(ewembi_wb[r, c, ], scale=12)$fitted)
+    #spei24[r, c, ] <- as.vector(spei(ewembi_wb[r, c, ], scale=24)$fitted)
     spei36[r, c, ] <- as.vector(spei(ewembi_wb[r, c, ], scale=36)$fitted)
 	
   }
 }
 
 save(spei3, file = '../spei/ewembi_spei3.Rdata')
-save(spei12, file = '../spei/ewembi_spei36.Rdata')
-save(spei24, file = '../spei/ewembi_spei36.Rdata')
+save(spei12, file = '../spei/ewembi_spei12.Rdata')
+save(spei24, file = '../spei/ewembi_spei24.Rdata')
 save(spei36, file = '../spei/ewembi_spei36.Rdata')
 
 

@@ -17,18 +17,18 @@ library(data.table)
 #   filter((age <= 60) & (months_in_loc >= 3) & (months_before_survey < 180))
 # 
 # write.csv(child.months, 'child.months-reduced.csv', row.names=F)
-child.months <- read_csv('child.months-reduced.csv') %>%
-  mutate(cc = substr(ind_code, 1, 2),
-         year = floor(date/12) + 1900)
+child.months <- fread('child.months-reduced.csv', data.table=T, key=c('ind_code'))
 
-ind <- read_csv(file='Mortality_individualdata.csv') %>%
-  select(ind_code, resp_code, code, birth_order, male)
+ind <- fread(file='Mortality_individualdata.csv', data.table=T, key=c('ind_code')) %>%
+  select(ind_code, code, birth_order, male)
 
-spei <- read_csv(file='Mortality_SPI_Temps_Ewembi.csv') %>%
-  select(date=date_cmc, code, spei3, spei6, spei12, spei24, spei36)
+temp <- fread('Temps_month.csv', data.table=T, key=c('code', 'date'))
 
-gdp <- read_csv('Mortality_GDP_SSP_Harmonized.csv') %>%
-  select(date=date_cmc, cc, GDP)
+#spei <- fread(file='Mortality_SPI_Temps_Ewembi.csv', data.table=T, key=c('date', 'code')) %>%
+#  select(date=date_cmc, code, spei3, spei6, spei12, spei24, spei36)
+
+#gdp <- fread('Mortality_GDP_SSP_Harmonized.csv', data.table=T, key=c('cc', 'date')) %>%
+#  select(date=date_cmc, cc, GDP)
 
 # #Skip wealth Data For Now, since it is not temporal
 # 
@@ -36,28 +36,27 @@ gdp <- read_csv('Mortality_GDP_SSP_Harmonized.csv') %>%
 #   select(wealth_factor_harmonized, hhsize, resp_code)
 # comb <- Reduce(function(x,y){merge(x,y,all.x=T,all.y=F)}, list(child.months, ind, res, spei))
 
-#Convert to data.table for easy merging
-child.months <- data.table(child.months, key='ind_code')
-ind <- data.table(ind, key='ind_code')
-spei <- data.table(spei, key=c('date', 'code'))
-gdp <- data.table(gdp, key=c('cc', 'date'))
 
 child.months <- merge(child.months, ind, all.x=T, all.y=F)
-child.months <- merge(child.months, spei, all.x=T, all.y=F, by=c('code', 'date'))
-child.months <- merge(child.months, gdp, all.x=T, all.y=F, by=c('cc', 'date'))
+
+setkeyv(child.months, cols=c('code', 'date'))
+
+child.months <- merge(child.months, temp, all.x=T, all.y=F)
+#child.months <- merge(child.months, spei, all.x=T, all.y=F, by=c('code', 'date'))
+#child.months <- merge(child.months, gdp, all.x=T, all.y=F, by=c('cc', 'date'))
 
 write.csv(child.months, 'Mortality-combined.csv', row.names=F)
 
-#Do Subsample a la Wood 
-n <- nrow(child.months)
-
-S <- 0.05 #Get 5% of all zeros
-
-sel <- child.months[!child.months$alive | runif(n) < S, ] #Sampling
-
-sel$offset <- rep(log(nrow(sel)/n), nrow(sel))
-
-write.csv(sel, 'Mortality-combined-subsample.csv', row.names=F)
+##Do Subsample a la Wood 
+#n <- nrow(child.months)
+#
+#S <- 0.05 #Get 5% of all zeros
+#
+#sel <- child.months[!child.months$alive | runif(n) < S, ] #Sampling
+#
+#sel$offset <- rep(log(nrow(sel)/n), nrow(sel))
+#
+##write.csv(sel, 'Mortality-combined-subsample.csv', row.names=F)
 
 system('/home/mattcoop/telegram.sh "Combine Done"')
 

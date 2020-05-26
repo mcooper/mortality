@@ -112,7 +112,7 @@ allmonths <- foreach(r=1:nrow(uu), .packages=c('tidyverse', 'data.table', 'lubri
 	#Summarize
 	month <- data.table(geo)[ , list(ct.tmax.30 = sum(tmax > 30, na.rm=T),
 												 ct.tmax.35 = sum(tmax > 35, na.rm=T),
-												 ct.tmax40 = sum(tmax > 40, na.rm=T),
+												 ct.tmax.40 = sum(tmax > 40, na.rm=T),
 												 ct.6089.90 = sum(tmax6089p > 0.9, na.rm=T),
 												 ct.6089.95 = sum(tmax6089p > 0.95, na.rm=T),
 												 ct.6089.99 = sum(tmax6089p > 0.99, na.rm=T),
@@ -128,6 +128,13 @@ allmonths <- foreach(r=1:nrow(uu), .packages=c('tidyverse', 'data.table', 'lubri
 
 	month
 }	
+
+geo_all <- geo_all %>%
+				#Remove jitter
+				mutate(x = x - 0.00001,
+							 y = y - 0.00001)
+
+allmonths <- merge(allmonths, geo_all)
 
 write.csv(allmonths, '/home/mattcoop/mortalityblob/dhs/Temps_month.csv', row.names=F)
 

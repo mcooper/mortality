@@ -45,18 +45,18 @@ child.months <- merge(child.months, temp, all.x=T, all.y=F)
 #child.months <- merge(child.months, spei, all.x=T, all.y=F, by=c('code', 'date'))
 #child.months <- merge(child.months, gdp, all.x=T, all.y=F, by=c('cc', 'date'))
 
-write.csv(child.months, 'Mortality-combined.csv', row.names=F)
+#write.csv(child.months, 'Mortality-combined.csv', row.names=F)
 
-##Do Subsample a la Wood 
-#n <- nrow(child.months)
-#
-#S <- 0.05 #Get 5% of all zeros
-#
-#sel <- child.months[!child.months$alive | runif(n) < S, ] #Sampling
-#
-#sel$offset <- rep(log(nrow(sel)/n), nrow(sel))
-#
-##write.csv(sel, 'Mortality-combined-subsample.csv', row.names=F)
+#Do Subsample a la Wood 
+n <- nrow(child.months)
+
+S <- 0.05 #Get 5% of all zeros
+
+sel <- child.months[!child.months$alive | runif(n) < S, ] #Sampling
+
+sel$offset <- rep(log(nrow(sel)/n), nrow(sel))
+
+write.csv(sel, 'Mortality-combined-subsample.csv', row.names=F)
 
 system('/home/mattcoop/telegram.sh "Combine Done"')
 

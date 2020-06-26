@@ -1,4 +1,4 @@
-setwd('/home/mattcoop/mortalityblob/dhs')
+setwd('/home/mattcoop/mortalityblob/mortality-dhs')
 
 library(tidyverse)
 library(readr)

@@ -19,11 +19,13 @@ library(data.table)
 # write.csv(child.months, 'child.months-reduced.csv', row.names=F)
 child.months <- fread('child.months-reduced.csv', data.table=T, key=c('ind_code'))
 
-ind <- fread(file='Mortality_individualdata.csv', data.table=T, key=c('ind_code')) %>%
-  select(ind_code, code, birth_order, male)
-
-temp <- fread('Temps_month.csv', data.table=T, key=c('code', 'date'))
-
+ind <- fread(file='Mortality_individualdata.csv', data.table=T, key=c('ind_code'),
+             select=c('ind_code', 'code', 'birth_order', 'male'))
+temp <- fread('Temps_month.csv', data.table=T, key=c('code', 'date'),
+              select=c('ct.9019.90', 'ct.9019.95', 'ct.tmax.30', 'ct.tmax.35', 'code', 'date'))
+tempz <- fread('Mortality_SPI_Temps_Ewembi.csv', data.table=T, key=c('code', 'date_cmc'),
+               select=c('code', 'date_cmc', 'temp1monthZ', 'temp2monthZ'))
+tempz <- rename(tempz, date=date_cmc)
 #spei <- fread(file='Mortality_SPI_Temps_Ewembi.csv', data.table=T, key=c('date', 'code')) %>%
 #  select(date=date_cmc, code, spei3, spei6, spei12, spei24, spei36)
 
@@ -42,6 +44,7 @@ child.months <- merge(child.months, ind, all.x=T, all.y=F)
 setkeyv(child.months, cols=c('code', 'date'))
 
 child.months <- merge(child.months, temp, all.x=T, all.y=F)
+child.months <- merge(child.months, tempz, all.x=T, all.y=F, by=c('code', 'date'))
 #child.months <- merge(child.months, spei, all.x=T, all.y=F, by=c('code', 'date'))
 #child.months <- merge(child.months, gdp, all.x=T, all.y=F, by=c('cc', 'date'))
 
@@ -56,7 +59,7 @@ sel <- child.months[!child.months$alive | runif(n) < S, ] #Sampling
 
 sel$offset <- rep(log(nrow(sel)/n), nrow(sel))
 
-write.csv(sel, 'Mortality-combined-subsample.csv', row.names=F)
+fwrite(sel, 'Mortality-combined-subsample.csv', row.names=F)
 
 system('/home/mattcoop/telegram.sh "Combine Done"')
 

@@ -31,10 +31,10 @@ convert_ncdf <- function(f){
   print(f)
 }
 
-cl <- makeCluster(64, outfile = '')
+cl <- makeCluster(32, outfile = '')
 registerDoParallel(cl)
 
-for (f in ncdfs){
+foreach(f=ncdfs, .packages=c('ncdf4', 'tidyverse', 'raster')) %dopar% {
   convert_ncdf(f)
 }
 

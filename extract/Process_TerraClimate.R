@@ -9,10 +9,17 @@
 #                        m=substr(101:112, 2, 3),
 #                        y=1958:2018))
 # df$url <- paste0('https://restart001.blob.core.windows.net/mortalityblob/TerraClimate/TerraClimate_', df$var, '_', df$y, '.', df$m, '.01.tif')
-# cat(df$url, sep='\n', file='tc_download')
+#cat(df$url, sep='\n', file='tc_download')
 
 # Them download all of the tifs in the file
 # cd /mnt/TerraClimate
+# wget -i /home/mattcoop/tc_download
+
+# If it stops
+# fs <- list.files('/mnt/TerraClimate')
+# df <- df[!basename(df$url) %in% fs, ]
+# cat(df$url, sep='\n', file='/home/mattcoop/tc_download')
+
 # wget -i /home/mattcoop/tc_download
 
 library(tidyverse)
@@ -32,13 +39,25 @@ dat <- read.csv('~/mortalityblob/mortality-dhs/Mortality_geodata.csv') %>%
 
 sp <- SpatialPointsDataFrame(coords=dat[ c('longitude', 'latitude')], data = dat)
 
+######################################################
+# Alias points with codes
+##################################################
 r <- raster('TerraClimate_ppt_1959.01.01.tif')
 codes <- raster(matrix(seq(1, ncell(r)), nrow=nrow(r), ncol=ncol(r)), xmx=xmax(r), xmn=xmin(r), ymx=ymax(r), ymn=ymin(r))
 codes[is.na(r)] <- NA
 
 sp@data$tmpcode <- extract(codes, sp)
 
-rll <- sp@data %>% group_by(tmpcode) %>%
+#Deal with points near a coast, coming up NA
+spna <- sp[is.na(sp@data$tmpcode) , ]
+spna$tmpcode <- NULL
+badcoords <- unique(spna@coords)
+tmpcode <- apply(X = badcoords, MARGIN = 1, FUN = function(xy) codes@data@values[which.min(replace(distanceFromPoints(codes, xy), is.na(codes), NA))])
+badcoords <- cbind.data.frame(badcoords, tmpcode)
+spna <- merge(spna@data, badcoords)
+sp <- bind_rows(spna, sp@data[!is.na(sp@data$tmpcode), ])
+
+rll <- sp %>% group_by(tmpcode) %>%
   summarize(x=mean(longitude),
             y=mean(latitude)) 	
 
@@ -201,7 +220,7 @@ precip <- list.files()%>%
   bind_rows
 
 #Write
-write.csv(precip, '~/mortalityblob/mortality-dhs/Mortality_SPI_Temps_TerraClimate.csv', row.names=F)
+write_csv(precip, '~/mortalityblob/mortality-dhs/Mortality_SPI_Temps_TerraClimate.csv')
 
 system('/home/mattcoop/telegram.sh "SPI for Mortality Done!"')
 

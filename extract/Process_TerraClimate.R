@@ -1,3 +1,20 @@
+# Command Line Preparation
+# sudo mkdir /mnt/TerraClimate
+# sudo chown mattcoop /mnt/TerraClimate
+# sudo mkdir /mnt/SPEIres
+# sudo chown mattcoop /mnt/SPEIres
+
+# Then generate a download list in R
+# df <- expand.grid(list(var=c('ppt', 'pet', 'tmax', 'tmin', 'srad', 'ws', 'vpd'),
+#                        m=substr(101:112, 2, 3),
+#                        y=1958:2018))
+# df$url <- paste0('https://restart001.blob.core.windows.net/mortalityblob/TerraClimate/TerraClimate_', df$var, '_', df$y, '.', df$m, '.01.tif')
+# cat(df$url, sep='\n', file='tc_download')
+
+# Them download all of the tifs in the file
+# cd /mnt/TerraClimate
+# wget -i /home/mattcoop/tc_download
+
 library(tidyverse)
 library(gdalUtils)
 library(raster)
@@ -7,13 +24,6 @@ library(lubridate)
 library(zoo)
 library(foreach)
 library(doParallel)
-
-# Command Line Preparation
-# sudo mkdir /mnt/TerraClimate
-# sudo chown mattcoop /mnt/TerraClimate
-# sudo mkdir /mnt/SPEIres
-# sudo chown mattcoop /mnt/SPEIres
-##rsync -avvvhW --no-compress --progress --include=*tif --exclude=*nc ~/mortalityblob/TerraClimate/ /mnt/TerraClimate
 
 setwd('/mnt/TerraClimate')
 

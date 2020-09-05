@@ -36,25 +36,3 @@ child.months <- child.months %>%
   select(-ind_code, -resp_code)
 
 fwrite(child.months, 'Mortality-combined.csv', row.names=F)
-
-
-#Subset to five years before survey
-
-#Do Subsample a la Wood 
-n <- nrow(child.months)
-S <- 0.05 #Get 5% of all zeros
-sel <- child.months[!child.months$alive | runif(n) < S, ] #Sampling
-sel$offset <- rep(log(nrow(sel)/n), nrow(sel))
-fwrite(sel, 'Mortality-combined-subsample.csv', row.names=F)
-
-
-#Do Subsample a la Wood 
-n <- nrow(child.months)
-S <- 0.05 #Get 5% of all zeros
-sel <- child.months[!child.months$alive | runif(n) < S, ] #Sampling
-sel$offset <- rep(log(nrow(sel)/n), nrow(sel))
-fwrite(sel, 'Mortality-combined-subsample.csv', row.names=F)
-
-system('/home/mattcoop/telegram.sh "Combine Done"')
-
-

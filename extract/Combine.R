@@ -22,17 +22,26 @@ ind <- fread(file='Mortality_individualdata.csv', data.table=T, key=c('ind_code'
              select=c('ind_code', 'code', 'birth_order', 'male', 'resp_code'))
 house <- fread('Mortality_household.csv', data.table=T, key=c('resp_code'),
                select=c('adequate_sanitation', 'wealth_factor_harmonized','resp_code'))
-clim <- fread('Mortality_SPI_Temps_TerraClimate.csv', data.table=T, key=c('code', 'date_cmc'))
-clim <- rename(clim, date=date_cmc)
+temps <- fread('Mortality_SPI_Temps_TerraClimate.csv', data.table=T, key=c('code', 'date_cmc'),
+               select=c('code', 'date_cmc', 'wbgtZ1', 'wbgtZ2', 'wbgtZ3')) %>% 
+  rename(date=date_cmc)
+spei <- fread('Mortality_SPI_Temps.csv', data.table=T, key=c('date_cmc', 'code'),
+              select=c('code', 'date_cmc', 'spei3', 'spei6', 'spei12', 'spei24', 'spei36')) %>% 
+  rename(date=date_cmc)
 
+dim(child.months)
 child.months <- merge(child.months, ind, all.x=T, all.y=F)
 setkeyv(child.months, cols=c('code', 'date'))
-
+dim(child.months)
 child.months <- merge(child.months, house, all.x=T, all.y=F, by="resp_code")
-
-child.months <- merge(child.months, clim, all.x=T, all.y=F, by=c('date', 'code'))
+dim(child.months)
+child.months <- merge(child.months, temps, all.x=T, all.y=F, by=c('date', 'code'))
+dim(child.months)
+child.months <- merge(child.months, spei, all.x=T, all.y=F, by=c('date', 'code'))
+dim(child.months)
 
 child.months <- child.months %>%
-  select(-ind_code, -resp_code)
+  mutate(mortality = !alive) %>%
+  select(-ind_code, -resp_code, -alive)
 
 fwrite(child.months, 'Mortality-combined.csv', row.names=F)

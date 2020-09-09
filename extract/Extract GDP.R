@@ -4,6 +4,9 @@ library(dplyr)
 library(readxl)
 library(countrycode)
 
+test <- 
+  mynewcode('var')
+
 #Ok well lets get super tidyverse-ey
 data <- read.csv('G://My Drive/DHS Processed/Mortality_geodata.csv') %>%
   select(-X) %>%

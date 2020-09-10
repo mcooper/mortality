@@ -1,4 +1,4 @@
-setwd('G://My Drive/DHS New/')
+setwd('~/mortalityblob/dhsraw/')
 
 library(foreign)
 library(dplyr)
@@ -26,4 +26,4 @@ for (f in fs){
 
 df
 
-write.csv(df, 'C://Users/matt/mortality/scope/UseFiles.csv', row.names=F)
+write.csv(df, '~/mortality/scope/UseFiles.csv', row.names=F)

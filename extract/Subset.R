@@ -4,7 +4,9 @@ library(data.table)
 setwd('/home/mattcoop/mortalityblob/mortality-dhs/')
 
 data <- fread('Mortality-combined.csv')
-data$mortality <- data$mortality
+
+data <- data %>%
+  filter(!is.na(spei.tc.48))
 
 #Do Full Subset
 n <- nrow(data)

@@ -10,9 +10,12 @@ setwd('/home/mattcoop/mortalityblob/')
 #############################
 # Analyze full Subset
 #############################
+system('/home/mattcoop/telegram.sh "Reading in Data"')
 
 data <- fread('mortality-dhs/Mortality-subset-full.csv') %>%
   filter(!is.infinite(spei.mm.3) & !is.infinite(spei.mm.36))
+
+system('/home/mattcoop/telegram.sh "Starting"')
 
 ###spei.mm.3
 mod <- gam(mortality ~ age + mother_years_ed + mothers_age + birth_order + male + date + 

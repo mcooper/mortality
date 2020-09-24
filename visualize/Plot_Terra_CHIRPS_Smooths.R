@@ -10,8 +10,8 @@ library(tidyverse)
 
 setwd('~/mortalityblob/mod-results/')
 
-mods <- expand.grid(list(path=c('terraclimate', 'chirps-terraclimate'),
-                         out=c('spei3', 'spei36'),
+mods <- expand.grid(list(path=c('chirps-terraclimate'),
+                         out=c('spei.mm.3', 'spei.tc.3', 'spei.tc.36', 'spei.mm.36'),
                          scope=c('full', '2yo', '5yb', '5yb2yo')))
 mods$mod <- paste0(mods$path, '/', mods$out, '_', mods$scope, '.Rdata')
 
@@ -24,8 +24,8 @@ for (i in 1:nrow(mods)){
 
   s <- data.frame(m$x, m$fit, m$se)
 
-  s$data <- substr(mods$path[i], 1, 6)
-  s$out <- mods$out[i]
+  s$data <- substr(mods$out[i], 6, 7)
+  s$out <- str_extract(mods$out[i], '\\d+') 
   s$scope <- mods$scope[i]
 
   all <- bind_rows(all, s)

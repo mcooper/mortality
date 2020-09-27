@@ -4,7 +4,7 @@ library(mgcv)
 library(parallel)
 library(data.table)
 
-cl <- makeCluster(32, outfile = '')
+cl <- makeCluster(16, outfile = '')
 
 setwd('/home/mattcoop/mortalityblob/')
 

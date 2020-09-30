@@ -48,5 +48,45 @@ for (i in 3:nrow(fs)){
 }
 
 write.csv(allres, 'model-predictions.csv', row.names=F)
+allres <- read.csv('model-predictions.csv')
 
-system('~/telegram.sh Done Processing Data!')               
+#First compare splines and segments
+ggplot(allres %>% filter(spei==3, spei_val > -2.5, spei_val < 2.5)) + 
+  geom_line(aes(x=spei_val, y=prediction, linetype=seg)) + 
+  facet_wrap(data ~ sub + precip, scales='free')
+ggplot(allres %>% filter(spei==36, spei_val > -2.5, spei_val < 2.5)) + 
+  geom_line(aes(x=spei_val, y=prediction, linetype=seg)) + 
+  facet_wrap(data ~ sub + precip, scales='free')
+
+#Segments are super jagged, I like splines more
+#Also focus on more local values
+sel <- allres %>% filter(seg == 'Smooth', spei_val > -2.5, spei_val < 2.5)
+
+#Compare all variables
+ggplot(sel %>% filter(spei==3)) + 
+  geom_line(aes(x=spei_val, y=prediction)) + 
+  facet_wrap(data ~ sub + precip, scales='free')
+ggplot(sel %>% filter(spei==36)) + 
+  geom_line(aes(x=spei_val, y=prediction)) + 
+  facet_wrap(data ~ sub + precip, scales='free')
+
+#All and Subset are extremely similar
+#But not exactly so
+sel <- sel %>% filter(sub == 'all')
+
+#Compare timescale versus precip type
+ggplot(sel %>% filter(spei==3)) + 
+  geom_line(aes(x=spei_val, y=prediction)) + 
+  facet_wrap(data ~ precip, scales='free')
+ggplot(sel %>% filter(spei==36)) + 
+  geom_line(aes(x=spei_val, y=prediction)) + 
+  facet_wrap(data ~ precip, scales='free')
+
+#Current thoughts:
+# * Its too messy, just use a linear effect with speedglm
+# * Also try just categorical effects
+# * The most important interactive effect is age.
+# * Lots of horeshoes on both sides
+
+
+

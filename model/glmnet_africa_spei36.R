@@ -2,9 +2,7 @@ library(data.table)
 library(glmnet)
 library(Matrix)
 library(dplyr)
-library(doParallel)
-
-registerDoParallel(8)
+library(countrycode)
 
 setwd('~/mortalityblob/mortality-dhs/')
 
@@ -17,16 +15,13 @@ piece.formula <- function(var.name, knots) {
 }
 
 data <- fread('Mortality-combined.csv') %>%
-  filter(!is.infinite(spei.tc.3), !is.infinite(spei.tc.36))
+  filter(!is.infinite(spei.tc.3), !is.infinite(spei.tc.36),
+         countrycode(substr(code, 1, 2), 'dhs', 'region') == 'Sub-Saharan Africa')
 
 mm <- sparse.model.matrix(formula(paste0("mortality ~ age + mother_years_ed + mothers_age + ",
-                          piece.formula("spei.tc.3", c(-1, 0, 1)), 
+                          piece.formula("spei.tc.36", c(-1, 0, 1)),
                          " + birth_order + male + date + code")), data=data)
 mod <- glmnet(mm, data$mortality, family='binomial', alpha=0, lambda=0)
-save(mod, file='~/mortalityblob/glmnet/spei3.Rdata')
+save(mod, file='~/mortalityblob/glmnet/spei36.tc.afr.Rdata')
 
-mm <- sparse.model.matrix(formula(paste0("mortality ~ age + mother_years_ed + mothers_age + ",
-                          piece.formula("spei.mm.36", c(-1, 0, 1)),
-                         " + birth_order + male + date + code", data=data)
-mod <- glmnet(mm, data$mortality, family='binomial', alpha=0, lambda=0)
-save(mod, file='~/mortalityblob/glmnet/spei36.Rdata')
+system('~/telegram.sh "Done with SPEI36"')

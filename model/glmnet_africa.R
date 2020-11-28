@@ -37,6 +37,7 @@ mm <- sparse.model.matrix(formula(paste0("mortality ~ age + mother_years_ed + mo
                          " + birth_order + male + cc*year")), data=data)
 mod <- glmnet(mm, data$mortality, family='binomial', alpha=0, lambda=0)
 save(mod, file='~/mortalityblob/glmnet/spei03.tc.afr.aez.Rdata')
+rm(mm)
 
 system('~/telegram.sh "Done with TerraClimate SPEI03"')
 
@@ -46,6 +47,7 @@ mm <- sparse.model.matrix(formula(paste0("mortality ~ age + mother_years_ed + mo
                          " + birth_order + male + cc*year")), data=data)
 mod <- glmnet(mm, data$mortality, family='binomial', alpha=0, lambda=0)
 save(mod, file='~/mortalityblob/glmnet/spei24.tc.afr.aez.Rdata')
+rm(mm)
 
 system('~/telegram.sh "Done with TerraClimate SPEI24"')
 
@@ -55,6 +57,7 @@ mm <- sparse.model.matrix(formula(paste0("mortality ~ age + mother_years_ed + mo
                          " + birth_order + male + cc*year")), data=data)
 mod <- glmnet(mm, data$mortality, family='binomial', alpha=0, lambda=0)
 save(mod, file='~/mortalityblob/glmnet/spei03.ch.afr.aez.Rdata')
+rm(mm)
 
 system('~/telegram.sh "Done with CHRIPS SPEI03"')
 
@@ -64,6 +67,7 @@ mm <- sparse.model.matrix(formula(paste0("mortality ~ age + mother_years_ed + mo
                          " + birth_order + male + cc*year")), data=data)
 mod <- glmnet(mm, data$mortality, family='binomial', alpha=0, lambda=0)
 save(mod, file='~/mortalityblob/glmnet/spei24.ch.afr.aez.Rdata')
+rm(mm)
 
 system('~/telegram.sh "Done with CHRIPS SPEI24"')
 
@@ -73,6 +77,7 @@ mm <- sparse.model.matrix(formula(paste0("mortality ~ ",
                          " + cc*year")), data=data[sample(1:nrow(data), 10000), ])
 mod <- glmnet(mm, data$mortality, family='binomial', alpha=0, lambda=0)
 save(mod, file='~/mortalityblob/glmnet/spei03.tc.afr.aez.noloc.Rdata')
+rm(mm)
 
 system('~/telegram.sh "Done with TerraClimate SPEI03"')
 
@@ -82,6 +87,7 @@ mm <- sparse.model.matrix(formula(paste0("mortality ~ ",
                          " + cc*year")), data=data)
 mod <- glmnet(mm, data$mortality, family='binomial', alpha=0, lambda=0)
 save(mod, file='~/mortalityblob/glmnet/spei24.tc.afr.aez.noloc.Rdata')
+rm(mm)
 
 system('~/telegram.sh "Done with TerraClimate SPEI24"')
 
@@ -91,6 +97,7 @@ mm <- sparse.model.matrix(formula(paste0("mortality ~ ",
                          " + cc*year")), data=data)
 mod <- glmnet(mm, data$mortality, family='binomial', alpha=0, lambda=0)
 save(mod, file='~/mortalityblob/glmnet/spei03.ch.afr.aez.noloc.Rdata')
+rm(mm)
 
 system('~/telegram.sh "Done with CHRIPS SPEI03"')
 
@@ -100,5 +107,9 @@ mm <- sparse.model.matrix(formula(paste0("mortality ~ ",
                          " + cc*year")), data=data)
 mod <- glmnet(mm, data$mortality, family='binomial', alpha=0, lambda=0)
 save(mod, file='~/mortalityblob/glmnet/spei24.ch.afr.aez.noloc.Rdata')
+rm(mm)
 
 system('~/telegram.sh "Done with CHRIPS SPEI24"')
+
+
+

@@ -22,6 +22,11 @@ data <- fread('Mortality-combined.csv') %>%
 geo <- fread('Mortality_geodata.csv') %>%
    filter(countrycode(substr(code, 1, 2), 'dhs', 'region') == 'Sub-Saharan Africa')
 
+aez <- read.csv('Mortality_AEZs.csv') %>%
+  select(-X, -latitude, -longitude, -earliest_date, -latest_date)
+
+data <- merge(data, aez)
+
 data$cc <- substr(data$code, 1, 2)
 data$year <- 1900 + floor((data$date - 1)/12)
 data$year <- as.character(floor(data$year/5)*5)

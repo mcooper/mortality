@@ -49,8 +49,37 @@ mm <- sparse.model.matrix(mortality ~
 mod <- glmnet(mm, data$mortality, family='binomial', alpha=0, lambda=0)
 save(mod, file='~/mortalityblob/glmnet/spei0324.afr.aez.hdi.Rdata')
 
-mod <- cv.glmnet(mm, data$mortality, family='binomial', alpha=1)
+mod <- glmnet(mm, data$mortality, family='binomial', alpha=0.5, trace.it=1)
+save(mod, file='~/mortalityblob/glmnet/spei0324.afr.aez.hdi.elasticnet.Rdata')
+
+mod <- glmnet(mm, data$mortality, family='binomial', alpha=1, trace.it=1)
 save(mod, file='~/mortalityblob/glmnet/spei0324.afr.aez.hdi.lasso.Rdata')
+
+system('~/telegram.sh "Donezeo!"')
+
+#TerraClim, SHDI, 3 + 24
+mm <- sparse.model.matrix(mortality ~ 
+  shdi*spei.tc.3 + shdi*I(pmax(spei.tc.3 + 1, 0)) + 
+  shdi*I(pmax(spei.tc.3 - 0, 0)) + shdi*I(pmax(spei.tc.3 - 1, 0)) + 
+  shdi*spei.tc.24 + shdi*I(pmax(spei.tc.24 + 1, 0)) + 
+  shdi*I(pmax(spei.tc.24 - 0, 0)) + shdi*I(pmax(spei.tc.24 - 1, 0)) + 
+  healthindex + incindex + edindex, data=data)
+
+mod <- glmnet(mm, data$mortality, family='binomial', alpha=0.5, trace.it=1)
+save(mod, file='~/mortalityblob/glmnet/spei0324.afr.noaez.hdi.Rdata')
+rm(mm)
+
+data$shdi <- 1 - data$shdi
+#TerraClim, SHDI, 3 + 24
+mm <- sparse.model.matrix(mortality ~ 
+  shdi*spei.tc.3 + shdi*I(pmax(spei.tc.3 + 1, 0)) + 
+  shdi*I(pmax(spei.tc.3 - 0, 0)) + shdi*I(pmax(spei.tc.3 - 1, 0)) + 
+  shdi*spei.tc.24 + shdi*I(pmax(spei.tc.24 + 1, 0)) + 
+  shdi*I(pmax(spei.tc.24 - 0, 0)) + shdi*I(pmax(spei.tc.24 - 1, 0)) + 
+  healthindex + incindex + edindex, data=data)
+
+mod <- glmnet(mm, data$mortality, family='binomial', alpha=0.5, trace.it=1)
+save(mod, file='~/mortalityblob/glmnet/spei0324.afr.noaez.noinvhdi.Rdata')
 
 system('~/telegram.sh "Donezeo!"')
 

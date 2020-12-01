@@ -40,7 +40,7 @@ for (i in c(1, 2, 3, 6, 12, 24, 36, 48)){
   form <- paste0("mortality ~ shdi*spei.tc.", i, " + shdi*I(pmax(spei.tc.", i, " + 1, 0)) + shdi*I(pmax(spei.tc.", i, " - 0, 0)) + shdi*I(pmax(spei.tc.", i, " - 1, 0)) + healthindex + incindex + edindex")
   mm <- sparse.model.matrix(as.formula(form), data=data)
 
-  mod <- cv.glmnet(mm, data$mortality, family='binomial', alpha=1, parallel=T, trace.it=1)
+  mod <- glmnet(mm, data$mortality, family='binomial', alpha=1, trace.it=1)
   save(mod, file=paste0('~/mortalityblob/glmnet/spei', i, '.afr.hdi.Rdata'))
   rm(mm)
 }

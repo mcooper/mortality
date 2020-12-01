@@ -12,7 +12,7 @@ geo <- read.csv('Mortality_geodata.csv') %>%
 sp <- SpatialPointsDataFrame(coords=geo[ , c('longitude', 'latitude')], 
                               data=geo)
 
-aez <- raster('AEZ_DHS.tif')  %>%
+aez <- raster('spatial/AEZ_DHS.tif')  %>%
   crop(extent(-18, 53, -36, 25))
 
 Mode <- function(x, na.rm=T) {

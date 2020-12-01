@@ -13,9 +13,9 @@ geo <- read.csv('Mortality_geodata.csv') %>%
   mutate(earliest_year = 1900 + floor((earliest_date - 1)/12),
          latest_year = 1900 + floor((latest_date - 1)/12))
 
-shdi <- read.csv('SHDI Complete 4.0 (1).csv')
+shdi <- read.csv('spatial/SHDI Complete 4.0 (1).csv')
 
-gdlsp <- readOGR('.', 'GDL Shapefiles V4') %>%
+gdlsp <- readOGR('spatial', 'GDL Shapefiles V4') %>%
   crop(extent(-18, 53, -36, 25))
 
 sp <- SpatialPointsDataFrame(coords=geo[ , c('longitude', 'latitude')], 
@@ -62,7 +62,7 @@ badfinal <- final %>% filter(is.na(shdi))
 badfinalsp <- SpatialPointsDataFrame(coords = badfinal[ , c('longitude', 'latitude')],
                                      data = badfinal)
 
-hdi <- stack('HDI_1990_2015_v2.nc')
+hdi <- stack('spatial/HDI_1990_2015_v2.nc')
 Mode <- function(x, na.rm=T) {
   x <- x[!is.na(x)]
   ux <- unique(x)

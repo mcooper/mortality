@@ -3,13 +3,14 @@ library(doParallel)
 
 setwd('~/mortalityblob/mortalitycovars/')
 
-rasterOptions(tmpdir='/mnt/rastertmp')
-
-cl <- makeCluster(20, outfile='')
+cl <- makeCluster(10, outfile='')
 registerDoParallel(cl)
 
 
-foreach(i=2000:2020, .packages=c('raster')){
+foreach(i=2001:2020, .packages=c('raster')) %dopar% {
+
+  rasterOptions(tmpdir='/mnt/rastertmp')
+
   r1 <- raster(paste0('global_f_0_', i, '_1km.tif'))
   r2 <- raster(paste0('global_f_1_', i, '_1km.tif'))
   r3 <- raster(paste0('global_m_0_', i, '_1km.tif'))

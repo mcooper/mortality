@@ -15,13 +15,13 @@ piece.formula <- function(var.name, knots) {
 }
 
 data <- fread('Mortality-combined.csv') %>%
-  filter(!is.infinite(spei.tc.1), !is.infinite(spei.tc.2), !is.infinite(spei.tc.3), 
-         !is.infinite(spei.tc.6), !is.infinite(spei.tc.12), !is.infinite(spei.tc.24), 
-         !is.infinite(spei.tc.36), !is.infinite(spei.tc.48),
+
+data <- data %>%
+  filter(!is.infinite(spei1), !is.infinite(spei2), !is.infinite(spei3), 
+         !is.infinite(spei6), !is.infinite(spei12), !is.infinite(spei24), 
+         !is.infinite(spei36), !is.infinite(spei48),
          countrycode(substr(code, 1, 2), 'dhs', 'region') == 'Sub-Saharan Africa') %>%
-  na.omit %>%
-  select(-spei.mm.1, -spei.mm.2, -spei.mm.3, -spei.mm.6, -spei.mm.12, -spei.mm.24, -spei.mm.36,
-         -spei.mm.48)
+  na.omit
 
 aez <- read.csv('Mortality_AEZs.csv') %>%
   select(-X, -latitude, -longitude, -earliest_date, -latest_date)

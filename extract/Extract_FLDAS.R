@@ -137,7 +137,7 @@ precip <- list.files()%>%
   bind_rows
 
 #Write
-write.csv(precip, '~/mortalityblob/mortality-dhs/Mortality_SPI_Temps_ERA5.csv', row.names=F)
+write.csv(precip, '~/mortalityblob/mortality-dhs/Mortality_SPI_Temps_FLDAS.csv', row.names=F)
 
 system('/home/mattcoop/telegram.sh "SPI for Mortality Done!"')
 

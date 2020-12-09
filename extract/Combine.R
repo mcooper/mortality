@@ -18,24 +18,42 @@ library(data.table)
 
 child.months <- fread('child.months-reduced.csv', data.table=T, key=c('ind_code'))
 ind <- fread(file='Mortality_individualdata.csv', data.table=T, key=c('ind_code'),
-             select=c('ind_code', 'code', 'birth_order', 'male', 'resp_code'))
+           select=c('ind_code', 'code', 'birth_order', 'male', 'resp_code'))
 # house <- fread('Mortality_household.csv', data.table=T, key=c('resp_code'),
 #                select=c('adequate_sanitation', 'wealth_factor_harmonized','resp_code'))
 # temps <- fread('Mortality_SPI_Temps_TerraClimate.csv', data.table=T, key=c('code', 'date_cmc'),
 #                select=c('code', 'date_cmc', 'wbgtZ1', 'wbgtZ2', 'wbgtZ3')) %>% 
 #   rename(date=date_cmc)
-spei <- fread('Mortality_SPI_Temps_ERA5.csv', data.table=T, key=c('date_cmc', 'code'))
-names(spei)[names(spei) == 'date_cmc'] <- 'date'
+spei1 <- fread('Mortality_SPI_Temps_FLDAS.csv', data.table=T, key=c('date_cmc', 'code'))
+names(spei1)[names(spei1) == 'date_cmc'] <- 'date'
+spei1 <- spei1[ , c('date', 'code', 'spei1', 'spei2', 'spei3', 
+                    'spei6', 'spei12', 'spei24', 'spei36', 'spei48')]
+names(spei1)[grepl('spei', names(spei1))] <- gsub('spei', 'spei.fl.', names(spei1)[grepl('spei', names(spei1))])
+spei1 <- unique(spei1)
 
-dim(child.months)
-child.months <- merge(child.months, ind, all.x=T, all.y=F)
+spei2 <- fread('Mortality_SPI_Temps_ERA5.csv', data.table=T, key=c('date_cmc', 'code'))
+names(spei2)[names(spei2) == 'date_cmc'] <- 'date'
+spei2 <- spei2[ , c('date', 'code', 'spei1', 'spei2', 'spei3', 
+                    'spei6', 'spei12', 'spei24', 'spei36', 'spei48')]
+names(spei2)[grepl('spei', names(spei2))] <- gsub('spei', 'spei.er.', names(spei2)[grepl('spei', names(spei2))])
+spei2 <- unique(spei2)
+
+spei3 <- fread('Mortality_SPI_Temps_TerraClimate.csv', data.table=T, key=c('date_cmc', 'code'))
+names(spei3)[names(spei3) == 'date_cmc'] <- 'date'
+spei3 <- spei3[ , c('date', 'code', 'spei1', 'spei2', 'spei3', 
+                    'spei6', 'spei12', 'spei24', 'spei36', 'spei48')]
+names(spei3)[grepl('spei', names(spei3))] <- gsub('spei', 'spei.tc.', names(spei3)[grepl('spei', names(spei3))])
+spei3 <- unique(spei3)
+
 setkeyv(child.months, cols=c('code', 'date'))
 dim(child.months)
-# child.months <- merge(child.months, house, all.x=T, all.y=F, by="resp_code")
-# dim(child.months)
-# child.months <- merge(child.months, temps, all.x=T, all.y=F, by=c('date', 'code'))
-# dim(child.months)
-child.months <- merge(child.months, spei, all.x=T, all.y=F, by=c('date', 'code'))
+child.months <- merge(child.months, ind, all.x=T, all.y=F, by=c('ind_code'))
+dim(child.months)
+child.months <- merge(child.months, spei1, all.x=T, all.y=F, by=c('date', 'code'))
+dim(child.months)
+child.months <- merge(child.months, spei2, all.x=T, all.y=F, by=c('date', 'code'))
+dim(child.months)
+child.months <- merge(child.months, spei3, all.x=T, all.y=F, by=c('date', 'code'))
 dim(child.months)
 
 child.months <- na.omit(child.months)

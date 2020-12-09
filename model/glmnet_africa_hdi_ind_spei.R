@@ -23,14 +23,14 @@ data$year <- 1900 + floor((data$date - 1)/12)
 data <- merge(data, hdi, by=c('code', 'year'))
 
 #TerraClim, SHDI, AEZ, 3 + 24
-for (i in c(3, 6, 12, 24, 36, 48)){
+for (i in c(1, 2, 3, 6, 12, 24, 36, 48)){
   print(i)
 
   form <- paste0("mortality ~ shdi*spei", i, " + shdi*I(pmax(spei", i, " + 1, 0)) + shdi*I(pmax(spei", i, " - 0, 0)) + shdi*I(pmax(spei", i, " - 1, 0)) + healthindex + incindex + edindex")
   mm <- sparse.model.matrix(as.formula(form), data=data)
 
   mod <- glmnet(mm, data$mortality, family='binomial', alpha=1, trace.it=1)
-  save(mod, file=paste0('~/mortalityblob/glmnet/spei', i, '.afr.hdi.er.Rdata'))
+  save(mod, file=paste0('~/mortalityblob/glmnet/spei', i, '.afr.hdi.fl.Rdata'))
   rm(mm)
 }
 

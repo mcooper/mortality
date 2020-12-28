@@ -24,6 +24,13 @@ ind <- fread(file='Mortality_individualdata.csv', data.table=T, key=c('ind_code'
 # temps <- fread('Mortality_SPI_Temps_TerraClimate.csv', data.table=T, key=c('code', 'date_cmc'),
 #                select=c('code', 'date_cmc', 'wbgtZ1', 'wbgtZ2', 'wbgtZ3')) %>% 
 #   rename(date=date_cmc)
+spei0 <- fread('Mortality_SPI_Temps.csv', data.table=T, key=c('date_cmc', 'code'))
+names(spei0)[names(spei0) == 'date_cmc'] <- 'date'
+spei0 <- spei0[ , c('date', 'code', 'spei3', 
+                    'spei6', 'spei12', 'spei24', 'spei36', 'spei48')]
+names(spei0)[grepl('spei', names(spei0))] <- gsub('spei', 'spei.ch.', names(spei0)[grepl('spei', names(spei0))])
+spei0 <- unique(spei0)
+
 spei1 <- fread('Mortality_SPI_Temps_FLDAS.csv', data.table=T, key=c('date_cmc', 'code'))
 names(spei1)[names(spei1) == 'date_cmc'] <- 'date'
 spei1 <- spei1[ , c('date', 'code', 'spei1', 'spei2', 'spei3', 
@@ -48,6 +55,8 @@ spei3 <- unique(spei3)
 setkeyv(child.months, cols=c('code', 'date'))
 dim(child.months)
 child.months <- merge(child.months, ind, all.x=T, all.y=F, by=c('ind_code'))
+dim(child.months)
+child.months <- merge(child.months, spei0, all.x=T, all.y=F, by=c('date', 'code'))
 dim(child.months)
 child.months <- merge(child.months, spei1, all.x=T, all.y=F, by=c('date', 'code'))
 dim(child.months)
